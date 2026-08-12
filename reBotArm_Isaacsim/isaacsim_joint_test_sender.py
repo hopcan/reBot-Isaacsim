@@ -37,6 +37,7 @@ import numpy as np
 
 ARM_JOINT_COUNT = 6
 DEFAULT_HOST = "127.0.0.1"
+DEFAULT_SIM_HOST = "192.168.1.66"   #isaacsim端
 DEFAULT_PORT = 5005
 DEFAULT_SEND_HZ = 60.0
 DEFAULT_SEGMENT_SECONDS = 3.0
@@ -80,7 +81,7 @@ class IsaacJointTestSender:
     Send smoothly-interpolated test joint angles to the Isaac Sim receiver.
     """
 
-    def __init__(self, host: str = DEFAULT_HOST, port: int = DEFAULT_PORT) -> None:
+    def __init__(self, host: str = DEFAULT_SIM_HOST, port: int = DEFAULT_PORT) -> None:
         self.host = host
         self.port = port
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

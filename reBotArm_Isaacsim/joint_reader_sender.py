@@ -41,6 +41,7 @@ from reBotArm_control_py.actuator import RebotArm  # noqa: E402
 
 ARM_JOINT_COUNT = 6
 DEFAULT_HOST = "127.0.0.1"
+DEFAULT_SIM_HOST = "192.168.1.66"   #isaacsim端
 DEFAULT_PORT = 5005
 DEFAULT_SEND_HZ = 60.0
 DEFAULT_REPORT_EVERY = 30
@@ -66,7 +67,7 @@ class JointReaderSender:
     Joint-angle read-only sender - reads positions without sending control commands.
     """
 
-    def __init__(self, host: str = DEFAULT_HOST, port: int = DEFAULT_PORT, mit_enabled: bool = DEFAULT_MIT_ENABLED) -> None:
+    def __init__(self, host: str = DEFAULT_SIM_HOST, port: int = DEFAULT_PORT, mit_enabled: bool = DEFAULT_MIT_ENABLED) -> None:
         self.host = host
         self.port = port
         self.mit_enabled = mit_enabled

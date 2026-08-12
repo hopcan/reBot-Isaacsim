@@ -60,6 +60,8 @@ if not callable(SimulationApp):
 
 ARM_JOINT_COUNT = 6
 DEFAULT_HOST = "127.0.0.1"
+DEFAULT_SIM_HOST = "192.168.1.66"   #isaacsim端
+DEFAULT_REBOT_ARM_HOST = "192.168.15.199"  #机械臂端
 DEFAULT_PORT = 5005
 DEFAULT_FEEDBACK_PORT = 5006
 DEFAULT_RENDER_HZ = 120.0
@@ -96,7 +98,7 @@ class IsaacJointMirror:
     Receive UDP joint angles and mirror them to the Isaac Sim articulation.
     """
 
-    def __init__(self, host: str = DEFAULT_HOST, port: int = DEFAULT_PORT) -> None:
+    def __init__(self, host: str = DEFAULT_SIM_HOST, port: int = DEFAULT_PORT) -> None:
         self.asset_path = REPO_ROOT / ASSET_RELATIVE_PATH
         if not self.asset_path.exists():
             raise FileNotFoundError(
@@ -107,7 +109,7 @@ class IsaacJointMirror:
         self.port = port
         self.feedback_port = DEFAULT_FEEDBACK_PORT
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.socket.bind((self.host, self.port))
+        self.socket.bind((self.host,self.port))
         self.socket.setblocking(False)
         self.feedback_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
@@ -456,7 +458,7 @@ class IsaacJointMirror:
                 }
                 self.feedback_socket.sendto(
                     json.dumps(feedback, separators=(",", ":")).encode("utf-8"),
-                    (addr[0], self.feedback_port),
+                    (DEFAULT_REBOT_ARM_HOST, self.feedback_port),
                 )
                 continue
 
@@ -535,7 +537,7 @@ def main() -> None:
     print("  夹爪行为: 使用位置目标直接控制夹爪滑轨")
     print("  停止方式: 关闭 Isaac Sim 窗口或 Ctrl+C")
     print("=" * 72)
-    print(f"[接收] udp://{DEFAULT_HOST}:{DEFAULT_PORT}")
+    print(f"[接收] udp://{DEFAULT_SIM_HOST}:{DEFAULT_PORT}")
     print(f"[资产] {ASSET_RELATIVE_PATH}")
 
     print()
@@ -546,7 +548,7 @@ def main() -> None:
     print("  Gripper behavior: position targets directly control the gripper slide")
     print("  To stop: close the Isaac Sim window or press Ctrl+C")
     print("=" * 72)
-    print(f"[receiver] udp://{DEFAULT_HOST}:{DEFAULT_PORT}")
+    print(f"[receiver] udp://{DEFAULT_SIM_HOST}:{DEFAULT_PORT}")
     print(f"[asset] {ASSET_RELATIVE_PATH}")
 
     mirror = IsaacJointMirror()

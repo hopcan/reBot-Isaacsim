@@ -43,11 +43,12 @@ from reBotArm_control_py.dynamics import compute_generalized_gravity  # noqa: E4
 
 ARM_JOINT_COUNT = 6
 DEFAULT_HOST = "127.0.0.1"
+DEFAULT_SIM_HOST = "192.168.1.66"   #isaacsim端
 DEFAULT_PORT = 5005
 DEFAULT_SEND_HZ = 60.0
 DEFAULT_REPORT_EVERY = 30
 DEFAULT_POSITION_ALPHA = 0.2
-GRIPPER_POSITION_SCALE = 0.03
+GRIPPER_POSITION_SCALE = 0.0073
 
 _running = True
 
@@ -68,7 +69,7 @@ class GravityCompensationSender:
     Gravity compensation and joint-angle sender for the physical robot arm.
     """
 
-    def __init__(self, host: str = DEFAULT_HOST, port: int = DEFAULT_PORT) -> None:
+    def __init__(self, host: str = DEFAULT_SIM_HOST, port: int = DEFAULT_PORT) -> None:
         self.host = host
         self.port = port
         self.rebotarm = RebotArm()
@@ -107,7 +108,7 @@ class GravityCompensationSender:
             )
         # latest_q 保存仿真坐标（q_sim = -q_motor），latest_q_raw 保存电机坐标。
         # latest_q holds the sim frame (q_sim = -q_motor); latest_q_raw holds the motor frame.
-        self.latest_q[:] = -q0[:ARM_JOINT_COUNT]
+        self.latest_q[:] = q0[:ARM_JOINT_COUNT]
         self.latest_q_raw[:] = q0[:ARM_JOINT_COUNT]
         if self.rebotarm.has_gripper:
             gripper_q0 = self.rebotarm.gripper.get_positions(request_feedback=True)
@@ -123,10 +124,9 @@ class GravityCompensationSender:
         q = robot.arm.get_positions(request_feedback=True)
         q_arm = q[:ARM_JOINT_COUNT]
         tau_g = compute_generalized_gravity(q=q_arm)
-
-        tau_g[1] *= 1.3  # joint2 额外补偿 / additional compensation for joint 2
-        tau_g[2] *= 1.6  # joint3 额外补偿 / additional compensation for joint 3
-
+        tau_g[1] *= 1.2  # joint2 额外补偿 / additional compensation for joint 2
+        tau_g[2] *= 2.5  # joint3 额外补偿 / additional compensation for joint 3
+        tau_g[3] *= 2.5
         pad_len = max(robot.arm.num_joints - ARM_JOINT_COUNT, 0)
         tau_cmd = np.concatenate([tau_g, np.zeros(pad_len, dtype=np.float64)])
 
@@ -138,7 +138,7 @@ class GravityCompensationSender:
             tau=tau_cmd,
         )
         if robot.has_gripper:
-            gripper_q = robot.gripper.get_positions(request_feedback=False)
+            gripper_q = -1*robot.gripper.get_positions(request_feedback=False)
             robot.gripper.send_mit(
                 pos=gripper_q,
                 vel=np.zeros(robot.gripper.num_joints, dtype=np.float64),
@@ -152,8 +152,8 @@ class GravityCompensationSender:
 
         self.latest_q_raw[:] = q_arm
         filtered_q = (1.0 - self.position_alpha) * (-self.latest_q) + self.position_alpha * q_arm
-        self.latest_q[:] = -filtered_q
-
+        # self.latest_q[:] = -filtered_q
+        self.latest_q[:] = q_arm
     def run(self, send_hz: float = DEFAULT_SEND_HZ) -> None:
         if send_hz <= 0:
             raise ValueError("send_hz 必须为正数 / send_hz must be a positive number")

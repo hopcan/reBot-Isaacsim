@@ -46,7 +46,7 @@ DEFAULT_PORT = 5005
 DEFAULT_SEND_HZ = 60.0
 DEFAULT_REPORT_EVERY = 30
 GRIPPER_POSITION_SCALE = 0.007
-DEFAULT_MIT_ENABLED = False  # MIT 零命令发送开关 / MIT zero-command send toggle
+DEFAULT_MIT_ENABLED = True  # MIT 零命令发送开关 / MIT zero-command send toggle
 
 _running = True
 
@@ -261,7 +261,7 @@ def main() -> None:
     print(f"  MIT 零命令: {mit_status}")
     print("  停止方式: Ctrl+C")
     print("=" * 72)
-    print(f"[发送] udp://{DEFAULT_HOST}:{DEFAULT_PORT}")
+    print(f"[发送] udp://{DEFAULT_SIM_HOST}:{DEFAULT_PORT}")
     print(f"[关节] arm 前 {ARM_JOINT_COUNT} 个关节")
     print(f"[MIT] {mit_status}")
     print()
@@ -270,7 +270,7 @@ def main() -> None:
     print(f"  MIT zero-command: {mit_status}")
     print("  To stop: press Ctrl+C")
     print("=" * 72)
-    print(f"[sender] udp://{DEFAULT_HOST}:{DEFAULT_PORT}")
+    print(f"[sender] udp://{DEFAULT_SIM_HOST}:{DEFAULT_PORT}")
     print(f"[joints] first {ARM_JOINT_COUNT} arm joints")
     print(f"[MIT] {mit_status}")
 

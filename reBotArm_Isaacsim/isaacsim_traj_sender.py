@@ -69,6 +69,7 @@ from reBotArm_control_py.trajectory.clik_tracker import (  # noqa: E402
 
 ARM_JOINT_COUNT = 6
 DEFAULT_HOST = "127.0.0.1"
+DEFAULT_SIM_HOST = "192.168.1.66"   #isaacsim端
 DEFAULT_PORT = 5005
 DEFAULT_FEEDBACK_PORT = 5006
 DEFAULT_FEEDBACK_TIMEOUT = 5.0          # 等待反馈的超时（秒）
@@ -77,7 +78,7 @@ DEFAULT_TRAJ_DURATION = 3.0         # 默认轨迹时长（秒）
 DEFAULT_SPEED_SCALE = 1.0           # 速度比例：1.0 = 使用默认时长，>1 更快
 DEFAULT_JOINT_TOLERANCE = 1e-3      # 直发 q 模式下，目标与当前差距过小时跳过规划
 DEFAULT_NULL_GAIN = 0.05            # CLIK 零空间梯度增益（关节限位避让）
-DEFAULT_GRIPPER_MAX_OPENING_M = 0.045  # 夹爪完全打开时每指的滑动距离（米）；保守值，小于 USD upperLimit（两指均为 0.05）
+DEFAULT_GRIPPER_MAX_OPENING_M = 0.055  # 夹爪完全打开时每指的滑动距离（米）；保守值，小于 USD upperLimit（两指均为 0.05）
 
 _running = True
 
@@ -97,7 +98,7 @@ class TrajSender:
 
     def __init__(
         self,
-        host: str = DEFAULT_HOST,
+        host: str = DEFAULT_SIM_HOST,
         port: int = DEFAULT_PORT,
     ) -> None:
         self.host = host
@@ -391,7 +392,7 @@ class TrajSender:
         print("  输入位姿 (每行一条):")
         print("    x y z                       (位置, 米; 姿态保持当前)")
         print("    x y z r p y                 (位置+姿态, 米/度)")
-        print("    gripper <0~1>                (单独更新夹爪, 立即广播)")
+        print("    gripper <0~1>                (单独更新夹爪张开比例, 立即广播)")
         print("    q j1 j2 j3 j4 j5 j6         (直接发关节角, 度)")
         print("    speed <scale>                (调整规划时长比例, 默认 1.0)")
         print("    resync                       (重新从仿真端读取当前关节角)")

@@ -24,7 +24,7 @@ def _hw_config() -> dict:
     if _hw_cfg_cache is not None:
         return _hw_cfg_cache
 
-    hw_yaml = "rebotarm_rs.yaml"
+    hw_yaml = "rebotarm_dm.yaml"
     if _global_cfg.exists():
         global_data = yaml.safe_load(_global_cfg.read_text()) or {}
         hw_yaml = global_data.get("hardware_yaml", hw_yaml)

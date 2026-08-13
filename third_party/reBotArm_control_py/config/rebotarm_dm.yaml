@@ -4,8 +4,8 @@
 # 每组独立控制模式，独立发送
 
 # 运动学配置（URDF 路径、末端执行器帧）
-urdf_path: "urdf/00-arm-rs_asm-v3/urdf/00-arm-rs_asm-v3.urdf"
-end_effector_frame: "gripper_end"
+urdf_path: "urdf/reBot_B601_DM/urdf/reBot_B601_DM.urdf"
+end_effector_frame: "gripper_link"
 
 channel: /dev/ttyACM0
 rate: 500

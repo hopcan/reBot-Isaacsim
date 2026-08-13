@@ -49,6 +49,7 @@ from reBotArm_control_py.kinematics.inverse_kinematics import IKParams  # noqa: 
 
 ARM_JOINT_COUNT = 6
 DEFAULT_HOST = "127.0.0.1"
+DEFAULT_SIM_HOST = "192.168.1.66"   #isaacsim端
 DEFAULT_PORT = 5005
 DEFAULT_SEND_HZ = 60.0
 DEFAULT_GRIPPER = 0.0
@@ -69,7 +70,7 @@ signal.signal(signal.SIGINT, _sigint_handler)
 class IKSender:
     """循环读取位姿 → IK 求解 → UDP 发送关节角。"""
 
-    def __init__(self, host: str = DEFAULT_HOST, port: int = DEFAULT_PORT) -> None:
+    def __init__(self, host: str = DEFAULT_SIM_HOST, port: int = DEFAULT_PORT) -> None:
         self.host = host
         self.port = port
 

@@ -131,8 +131,12 @@ class IKSender:
             # 只更新本地夹爪比例；不再发送关节包，
             # 否则接收端会把 latest_q 覆盖为零，让仿真臂瞬间回原点。
             # 新比例会在下一次 IK 或 `q` 命令随包一起下发。
+            
             ratio = float(line.split(None, 1)[1])
-            self.gripper = float(np.clip(ratio, 0.0, 1.0))
+            if ratio > 0.055:
+                print("超出夹爪限制,夹爪角度更新到最大")
+            self.gripper = float(np.clip(ratio, 0.0, 0.055))
+            
             return f"夹爪比例已更新为 {self.gripper:.2f}（下一次关节命令生效）"
 
         if line.lower() in {"quit", "exit", ":q"}:
@@ -196,9 +200,10 @@ class IKSender:
         print(f"  关节名      : {self.joint_names}")
         print(f"  目标 (UDP)  : {self.host}:{self.port}")
         print("  输入位姿 (每行一条):")
+        print("输入夹爪角度,夹爪会在下次下发 位置/关节 命令的时候更新")
         print("    x y z                  (位置, 米; 姿态保持当前)")
         print("    x y z r p y            (位置+姿态, 米/度)")
-        print("    gripper <0~1>           (单独更新夹爪)")
+        print("    gripper <0~0.055>           (单独更新夹爪, 米)")
         print("    q j1 j2 j3 j4 j5 j6    (直接发关节角, 度)")
         print("  退出: Ctrl+C / quit / :q")
         print("=" * 64)

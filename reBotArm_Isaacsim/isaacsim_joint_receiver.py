@@ -65,7 +65,7 @@ DEFAULT_REBOT_ARM_HOST = "192.168.15.199"  #机械臂端
 DEFAULT_PORT = 5005
 DEFAULT_FEEDBACK_PORT = 5006
 DEFAULT_RENDER_HZ = 120.0
-ASSET_RELATIVE_PATH = Path("usd/RS-rebot-dev-arm/RS-rebot-dev-arm.usda")
+ASSET_RELATIVE_PATH = Path("usd/reBot_B601_DM/reBot_B601_DM.usda")
 GRID_TEXTURE_RELATIVE_PATH = Path("reBotArm_Isaacsim/assets/grid_ground.png")
 GRID_TEXTURE_CELLS = 10
 GRID_TEXTURE_SIZE = 512
@@ -76,7 +76,7 @@ DOME_LIGHT_PRIM_PATH = "/World/DomeLight"
 DISTANT_LIGHT_PRIM_PATH = "/World/DistantLight"
 DEFAULT_CAMERA_EYE = np.array([0.595, 0.532, 0.636], dtype=np.float64)
 DEFAULT_CAMERA_TARGET = np.array([0.0, 0.0, 0.35], dtype=np.float64)
-GRIPPER_JOINT_NAMES = ("joint_left", "joint_right")
+GRIPPER_JOINT_NAMES = ("gripper_joint1", "gripper_joint2")
 TEXTURE_SYMLINK_ENV = "REBOT_TEXTURE_SYMLINK"
 
 _running = True
@@ -334,9 +334,9 @@ class IsaacJointMirror:
             colliders_rel = colliders_api.CreateIncludesRel()
         finger_collider_paths = (
             f"{ROBOT_PRIM_PATH}/Geometry/base_link/link1/link2/link3/link4/link5/link6"
-            f"/gripper_end/gripper_left/gripper_left",
+            f"/gripper_link/gripper_left",
             f"{ROBOT_PRIM_PATH}/Geometry/base_link/link1/link2/link3/link4/link5/link6"
-            f"/gripper_end/gripper_right/gripper_right",
+            f"/gripper_link/gripper_right",
         )
         for finger_collider_path in finger_collider_paths:
             if stage.GetPrimAtPath(finger_collider_path).IsValid():

@@ -2,19 +2,27 @@
 
 [简体中文](./README.md) | [English](./README_EN.md) | Español
 
-reBot-Isaacsim es un proyecto de simulación en NVIDIA Isaac Sim diseñado específicamente para el reBotArm. Aprovecha el motor de física de alta fidelidad de Isaac Sim para reproducir con precisión en un entorno virtual las características cinemáticas del brazo robótico y la lógica de coordinación de la pinza (gripper), y ofrece una plataforma independiente de simulación pura para el desarrollo de algoritmos de control, la verificación de la planificación de trayectorias y las pruebas de protocolos de comunicación.
+reBot-Isaacsim es un proyecto de NVIDIA Isaac Sim orientado al robot reBotDM. El código en este repositorio es compatible actualmente solo con reBotDM y puede no funcionar con otras variantes reBotArm o RS.
+
+Notas importantes:
+
+- Compatibilidad: solo reBotDM.
+- Versión recomendada de Isaac Sim: 6.0.0.
+- Método de instalación recomendado: descargar el paquete zip oficial de Isaac Sim y extraerlo localmente.
+- Todos los scripts que interactúan directamente con Isaac Sim deben iniciarse con el `python.sh` oficial incluido en la distribución de Isaac Sim.
+- Los scripts emisores que usan hardware deben ejecutarse en el entorno `uv` del repositorio (ver `third_party/reBotArm_control_py`).
 
 ## Descripción general de los componentes
 
-Este proyecto proporciona varios componentes emisores para cubrir distintos casos de uso:
+Este proyecto ofrece varios emisores para distintos casos de uso:
 
 | Componente | Descripción |
 |------|------|
-| `gravity_joint_sender` | **Modo de compensación de gravedad + asa**: para brazos robóticos modificados (pinza retirada, asa acoplada); el modo de compensación de gravedad permite mover el brazo a mano y sincroniza en tiempo real los ángulos articulares con Isaac Sim |
-| `isaacsim_ik_sender` | **Modo de cinemática inversa (IK)**: se introduce la pose del efector final; el solver de IK calcula los ángulos articulares y los envía a Isaac Sim |
-| `isaacsim_traj_sender` | **Modo de planificación de trayectorias (Traj)**: sobre la base de la IK, añade planificación de trayectorias en el espacio articular (perfil MIN_JERK) para un control de movimiento suave |
-| `isaacsim_joint_test_sender` | **Modo de prueba de articulaciones**: no requiere brazo físico; envía trayectorias de ángulos articulares predefinidas para verificar el receptor de Isaac Sim y la comunicación |
-| `joint_reader_sender` | **Modo de mapeo Real-to-Sim**: lee los ángulos articulares en modo de solo lectura y los mapea a Isaac Sim; adecuado para usarlo junto con otros proyectos de control (por ejemplo, cuando el brazo físico está ejecutando otras tareas, esta función permite reflejar simultáneamente su movimiento en Isaac Sim para visualizarlo) |
+| `gravity_joint_sender` | Modo compensación de gravedad / asa: para robots modificados (pinza retirada, asa acoplada). Permite guiado manual y envía ángulos articulares a Isaac Sim. |
+| `isaacsim_ik_sender` | Modo de cinemática inversa (IK): introducir la pose del efector final, resolver IK y enviar ángulos articulares a Isaac Sim. |
+| `isaacsim_traj_sender` | Modo trayectoria: IK + generación de trayectoria en espacio articular (MIN_JERK) para movimientos suaves. |
+| `isaacsim_joint_test_sender` | Modo de prueba de articulaciones: sin hardware; envía trayectorias predefinidas para validar el receptor y la comunicación. |
+| `joint_reader_sender` | Mapeo Real-to-Sim: espejo de ángulos articulares en modo solo-lectura para visualización junto con otros proyectos de control. |
 
 ## Arquitectura del sistema
 
@@ -28,8 +36,8 @@ Este proyecto proporciona varios componentes emisores para cubrir distintos caso
 │   │ gravity_joint_sender │──────▶ │ isaacsim_joint_receiver  │   │
 │   │                      │ 5005   │                          │   │
 │   │  • reBotArm_control  │        │  • Isaac Sim             │   │
-│   │    _py entorno uv    │        │  • USD suelo + brazo     │   │
-│   │  • MIT + FF gravedad │        │  • Sinc. articulaciones  │   │
+│   │    _py entorno uv    │        │  • USD suelo + robot     │   │
+│   │  • MIT + FF gravedad │        │  • Sincronización        │   │
 │   │  • Guiado a mano OK  │        │  • Pinza biarticulada    │   │
 │   └──────────────────────┘        └──────────────────────────┘   │
 └──────────────────────────────────────────────────────────────────┘
@@ -44,165 +52,160 @@ reBot-Isaacsim/
 ├── README_EN.md                             # Versión en inglés de este README
 ├── README_ES.md                             # Versión en español de este README
 ├── reBotArm_Isaacsim/                       # Directorio principal de ejemplos
-│   ├── gravity_joint_sender.py              # Modo compensación de gravedad + asa (brazo modificado, guiado a mano)
-│   ├── isaacsim_ik_sender.py                # Modo de cinemática inversa (control IK)
-│   ├── isaacsim_traj_sender.py              # Modo de planificación de trayectorias (IK + trayectoria en espacio articular)
-│   ├── isaacsim_joint_test_sender.py        # Modo de prueba de articulaciones (trayectoria predefinida, sin hardware)
-│   ├── joint_reader_sender.py                # Modo de mapeo Real-to-Sim (solo lectura, visualización sincronizada)
-│   ├── isaacsim_joint_receiver.py           # Receptor de Isaac Sim (sincronización de ángulos articulares)
-│   ├── live_sync.py                         # Script auxiliar con instrucciones de arranque
-│   ├── run_sender.sh                        # Lanza el emisor
-│   └── run_isaacsim_receiver.sh             # Lanza el receptor de Isaac Sim
+│   ├── gravity_joint_sender.py              # Emisor hardware (ejecutar dentro de uv)
+│   ├── isaacsim_ik_sender.py                # Emisor IK (iniciar con python.sh de Isaac)
+│   ├── isaacsim_traj_sender.py              # Emisor trayectoria (iniciar con python.sh de Isaac)
+│   ├── isaacsim_joint_test_sender.py        # Emisor de prueba (usar python.sh si importa Isaac Sim)
+│   ├── joint_reader_sender.py               # Emisor solo-lectura
+│   ├── isaacsim_joint_receiver.py           # Receptor Isaac Sim (iniciar con python.sh)
+│   ├── live_sync.py                         # Script de guía de arranque
+│   └── ...
 ├── third_party/
-│   └── reBotArm_control_py/                 # Biblioteca de control principal (entorno uv independiente)
+│   └── reBotArm_control_py/                 # Biblioteca de control (entorno uv independiente)
 │       ├── pyproject.toml
 │       └── ...
-└── usd/
-    └── RS-rebot-dev-arm/
-        └── RS-rebot-dev-arm.usda            # Asset del robot para Isaac Sim
+├── urdf/
+│   └── ...                                  # URDF / archivos de configuración
+├── usd/
+│   └── reBot_B601_DM/
+│       └── reBot_B601_DM.usda               # Asset reBotDM
+└── ...
 ```
+
+Nota: ejecute los módulos Python directamente y seleccione el lanzador correcto:
+
+- Use `uv run python ...` para scripts que se ejecutan en el entorno `uv` del proyecto (emisores hardware).
+- Use `"$ISAACSIM_ROOT/python.sh"` para scripts que requieren el runtime nativo de Isaac Sim.
 
 ## Dependencias y requisitos previos
 
 | Componente | Requisito |
 |------|------|
-| Isaac Sim | Instalado y con la variable de entorno `ISAACSIM_ROOT` configurada |
-| Firmware de reBotArm | Firmware del brazo flasheado y bus CAN conectado (`can0`) |
-| Interfaz CAN | `can0` activa (UP) con un bitrate de 1 Mbps (`can_restart can0`) |
-| Python | 3.10+ |
-| uv | Recomendado para gestionar los entornos de Python |
-| reBotArm_control_py | Se ha ejecutado `uv sync` dentro de `third_party/reBotArm_control_py` |
+| Modelo | Código compatible con reBotDM únicamente |
+| Isaac Sim | 6.0.0; se recomienda la versión zip oficial |
+| Ruta de Isaac Sim | Se recomienda establecer `ISAACSIM_ROOT` al directorio de la release |
+| Interfaz serial/CAN | Por defecto `ttyACM0`, configurable en `third_party/reBotArm_control_py/config/rebotarm_dm.yaml` |
+| Python | Scripts emisores bajo Python 3.10+ administrado por `uv`; runtime de Isaac Sim provisto por `python.sh` |
+| uv | Recomendado para gestionar dependencias |
+| reBotArm_control_py | Ejecutar `uv sync` dentro de `third_party/reBotArm_control_py` |
 
-### Comprobar la interfaz CAN
+### Instalación recomendada de Isaac Sim
+
+Descargue la release zip oficial y extraiga el contenido en una ruta estable. Después, establezca `ISAACSIM_ROOT` apuntando a la carpeta de la release. Ejemplo:
 
 ```bash
-# Ver el estado de la interfaz CAN
-ip link show can0
-# Asegúrate de que el estado es UP y el bitrate es 1000000
+mkdir -p /home/seeed/IsaacSim
+# descomprimir el zip oficial en ese directorio
+# tras extraer debería aparecer algo como:
+# /home/seeed/IsaacSim/_build/linux-x86_64/release/python.sh
 
-# Si necesitas configurar o reiniciar el CAN:
-sudo ip link set can0 down
-sudo ip link set can0 up type can bitrate 1000000 restart-ms 100
+export ISAACSIM_ROOT=/home/seeed/IsaacSim/_build/linux-x86_64/release
+```
+
+### Comprobar interfaz serial/CAN
+
+```bash
+ls /dev/ttyACM*
+sudo chmod 666 /dev/ttyACM*
 ```
 
 ## Preparación del entorno
 
-### 1. Variable de entorno de Isaac Sim
+### 1. Instalar Isaac Sim 6.0.0
 
-Asegúrate de que lo siguiente está definido en `.bashrc` o en la configuración de tu shell:
+Use la release zip oficial y verifique que `python.sh` exista en la carpeta de la release.
 
-```bash
-export ISAACSIM_ROOT=/home/seeed/IsaacSim/_build/linux-x86_64/release
-```
-
-### 2. Entorno de reBotArm_control_py
+### 2. Entorno `reBotArm_control_py`
 
 ```bash
 cd third_party/reBotArm_control_py
 uv sync
 ```
 
-## Arranque (modo de dos terminales)
+## Arranque (modo dos terminales)
 
-Se necesitan dos terminales independientes. **El terminal 1 es siempre el receptor de Isaac Sim** y **en el terminal 2 se elige el emisor correspondiente a la función deseada**.
+Se requieren dos terminales independientes. El Terminal 1 es el receptor Isaac Sim; el Terminal 2 es el emisor hardware. Puede ejecutar ambos en la misma máquina ajustando `DEFAULT_SIM_HOST` y `DEFAULT_REBOT_ARM_HOST` a `127.0.0.1`.
 
-### Terminal 1 — Arrancar el receptor de Isaac Sim (común a todos los modos)
+### Terminal 1 — Iniciar el receptor Isaac Sim
 
-```bash
-cd reBotArm_Isaacsim
-./run_isaacsim_receiver.sh
-```
-
-**Salida esperada:**
-- Se abre la interfaz gráfica de Isaac Sim
-- Se cargan los assets USD del suelo y del brazo
-- Escucha en UDP `127.0.0.1:5005`
-- Queda a la espera de que el emisor se conecte
-
-### Terminal 2 — Elegir el emisor según la función
-
-**Orden de arranque: primero el receptor y después el emisor.**
-
-#### 1. Modo de compensación de gravedad + asa (`gravity_joint_sender`)
-
-Para brazos robóticos modificados (pinza retirada, asa acoplada); permite guiar el brazo a mano para controlar la simulación de Isaac Sim:
+Inicie el receptor con `python.sh` de Isaac Sim:
 
 ```bash
-cd reBotArm_Isaacsim
-./run_sender.sh
+"/ruta/a/tu/isaacsim/release/python.sh" \
+    /ruta/a/reBot-Isaacsim/reBotArm_Isaacsim/isaacsim_joint_receiver.py
 ```
 
-**Comportamiento esperado:**
-- Se conecta el brazo físico y se activa el modo MIT con prealimentación (feed-forward) de gravedad
-- El brazo puede moverse libremente con la mano
-- Los ángulos articulares se envían por UDP a 60 Hz
+Salida esperada:
 
-#### 2. Modo de cinemática inversa (`isaacsim_ik_sender`)
+- Se inicia la GUI de Isaac Sim.
+- Se carga el suelo y el asset reBotDM.
+- El receptor escucha en UDP `DEFAULT_SIM_HOST:5005`.
+- El receptor espera la conexión del emisor.
 
-Introduce la pose del efector final (posición/orientación); el sistema la resuelve mediante IK y mueve el brazo en Isaac Sim. Ejecuta directamente con `uv run` desde `reBotArm_Isaacsim/`:
+### Terminal 2 — Iniciar el emisor hardware
+
+Inicie el emisor después de haber arrancado el receptor:
 
 ```bash
-cd reBotArm_Isaacsim
-uv run python isaacsim_ik_sender.py
+cd /ruta/a/reBot-Isaacsim
+uv run python reBotArm_Isaacsim/gravity_joint_sender.py
 ```
 
-**Formato de entrada (una orden por línea):**
+Salida esperada:
+
+- El robot físico se conecta y se activa MIT con compensación de gravedad.
+- El robot puede ser guiado a mano.
+- Los ángulos articulares se transmiten por UDP a ~60 Hz.
+
+### Otros scripts relacionados con Isaac Sim
+
+Inicie otros scripts de Isaac Sim con `python.sh`:
+
+```bash
+export ISAACSIM_ROOT=/home/seeed/IsaacSim/_build/linux-x86_64/release
+"$ISAACSIM_ROOT/python.sh" reBotArm_Isaacsim/isaacsim_ik_sender.py
+"$ISAACSIM_ROOT/python.sh" reBotArm_Isaacsim/isaacsim_traj_sender.py
+"$ISAACSIM_ROOT/python.sh" reBotArm_Isaacsim/isaacsim_joint_test_sender.py
 ```
-x y z                       # posición (m), se mantiene la orientación
+
+## Formatos de entrada (IK / Traj)
+
+```
+x y z                       # posición (m), mantener la orientación
 x y z r p y                 # posición + orientación (m/grados)
 q j1 j2 j3 j4 j5 j6         # ángulos articulares directos (grados)
-gripper <0–1>                # actualiza solo la pinza
+gripper <0~1>                # actualizar solo la pinza
 ```
 
-#### 3. Modo de planificación de trayectorias (`isaacsim_traj_sender`)
+Modo trayectoria:
 
-IK más planificación de trayectorias en el espacio articular (MIN_JERK) para un movimiento suave. Ejecuta directamente con `uv run` desde `reBotArm_Isaacsim/`:
+```
+x y z
+x y z r p y
+q j1 j2 j3 j4 j5 j6
+gripper <0~1>
+speed <scale>
+resync
+```
+
+### Modo solo-lectura (`joint_reader_sender`)
 
 ```bash
-cd reBotArm_Isaacsim
-uv run python isaacsim_traj_sender.py
+cd /ruta/a/reBot-Isaacsim
+uv run python reBotArm_Isaacsim/joint_reader_sender.py
 ```
 
-**Formato de entrada (una orden por línea):**
-```
-x y z                       # posición (m)
-x y z r p y                 # posición + orientación (m/grados)
-q j1 j2 j3 j4 j5 j6         # objetivo directo en espacio articular (grados)
-gripper <0–1>                # actualiza solo la pinza
-speed <escala>               # ajusta la escala de duración de la trayectoria
-resync                       # vuelve a leer del simulador los ángulos articulares actuales
-```
+Salida esperada:
 
-#### 4. Modo de prueba de articulaciones (`isaacsim_joint_test_sender`)
-
-No requiere hardware; envía en bucle una trayectoria predefinida para verificar la comunicación y el receptor de Isaac Sim:
-
-```bash
-cd reBotArm_Isaacsim
-uv run python isaacsim_joint_test_sender.py
-```
-
-El emisor de prueba recorre en bucle varias poses articulares predefinidas con interpolación lenta; no se necesita conexión CAN.
-
-#### 5. Modo de mapeo Real-to-Sim (`joint_reader_sender`)
-
-Ángulos articulares de solo lectura mapeados a Isaac Sim; adecuado para usarlo mientras el brazo físico ejecuta otras tareas (visualización simultánea). Ejecuta directamente con `uv run` desde `reBotArm_Isaacsim/`:
-
-```bash
-cd reBotArm_Isaacsim
-uv run python joint_reader_sender.py
-```
-
-**Comportamiento esperado:**
-- Los ángulos articulares se leen únicamente en modo de realimentación pasiva (no se envía ningún comando de control)
-- Los ángulos articulares se envían por UDP a 60 Hz
-- Cuando el brazo físico está controlado por otro proyecto, su movimiento se sigue reflejando en Isaac Sim para visualizarlo
+- Lee ángulos articulares en modo pasivo (no envía comandos de control).
+- Envía los ángulos por UDP a ~60 Hz.
+- Refleja el movimiento del robot físico en Isaac Sim para visualización.
 
 ## Protocolo de comunicación
 
 JSON sobre UDP en `127.0.0.1:5005`.
 
-**Contenido (payload) que el emisor envía en cada datagrama:**
+Ejemplo de payload por datagrama:
 
 ```json
 {
@@ -217,84 +220,76 @@ JSON sobre UDP en `127.0.0.1:5005`.
 |------|------|------|
 | `sequence` | int | Número de secuencia monótonamente creciente |
 | `timestamp` | float | Marca de tiempo Unix (segundos) |
-| `joint_positions` | float[6] | Ángulos de las 6 primeras articulaciones (rad) |
-| `gripper_position` | float | Objetivo de posición de los dedos de la pinza (m); cada emisor lo calcula con su propia conversión (véase más abajo) |
+| `joint_positions` | float[6] | Ángulos de las primeras 6 articulaciones (rad) |
+| `gripper_position` | float | Posición objetivo de la pinza (m) |
 
-**Cadena de control de la pinza:**
-El receptor aplica el `gripper_position` recibido directamente como objetivo de posición de las dos articulaciones prismáticas de los dedos, recortado por dedo a `[0, límite superior]` (límite superior del USD: 0,05 m en ambos dedos; un solo motor mueve los dos a través de un único piñón, por lo que su recorrido es rígidamente 1:1). El receptor no aplica ninguna escala adicional. Los emisores convierten su entrada a `gripper_position` de la siguiente manera:
+Mapeos de pinza (ejemplos):
 
-| Emisor | Conversión a `gripper_position` (m) |
+| Emisor | Mapeo a `gripper_position` (m) |
 |------|------|
 | `gravity_joint_sender` | `gripper_q × 0.03` (`GRIPPER_POSITION_SCALE = 0.03`) |
 | `joint_reader_sender` | `gripper_q × 0.007` (`GRIPPER_POSITION_SCALE = 0.007`) |
-| `isaacsim_traj_sender` | `ratio × 0.045` (entrada `gripper <0–1>`, recortado a 0,045 m) |
-| `isaacsim_ik_sender` | `ratio ∈ [0, 1]` sin convertir, enviado como metros, de modo que cualquier ratio ≥ el límite superior de un dedo abre ese dedo por completo |
+| `isaacsim_traj_sender` | `ratio × 0.045` (entrada `gripper <0~1>`, recortada a 0.045 m) |
+| `isaacsim_ik_sender` | `ratio ∈ [0,1]` enviado como metros |
 
 ## Parámetros de configuración
 
 ### Emisor (`gravity_joint_sender.py`)
 
-| Parámetro | Valor por defecto | Descripción |
+| Parámetro | Por defecto | Descripción |
 |------|--------|------|
 | `ARM_JOINT_COUNT` | 6 | Número de articulaciones |
 | `DEFAULT_PORT` | 5005 | Puerto UDP |
 | `DEFAULT_SEND_HZ` | 60.0 | Frecuencia de envío (Hz) |
-| `GRIPPER_POSITION_SCALE` | 0.03 | Factor de conversión del ángulo de la pinza a posición |
-| `position_alpha` | 0.2 | Coeficiente del filtro paso bajo |
+| `GRIPPER_POSITION_SCALE` | 0.03 | Factor de escala de la pinza |
+| `position_alpha` | 0.2 | Coeficiente de filtro pasa-bajo |
 
 ### Receptor (`isaacsim_joint_receiver.py`)
 
-| Parámetro | Valor por defecto | Descripción |
+| Parámetro | Por defecto | Descripción |
 |------|--------|------|
 | `ARM_JOINT_COUNT` | 6 | Número de articulaciones |
 | `DEFAULT_PORT` | 5005 | Puerto UDP |
-| `DEFAULT_RENDER_HZ` | 120.0 | Frecuencia de renderizado de la simulación (Hz) |
-| `ROBOT_PRIM_PATH` | `/World/reBotArm` | Ruta del Prim del robot dentro de Isaac Sim |
-| `ASSET_RELATIVE_PATH` | `usd/RS-rebot-dev-arm/RS-rebot-dev-arm.usda` | Ruta del asset USD relativa a la raíz del repositorio |
+| `DEFAULT_RENDER_HZ` | 120.0 | Frecuencia de render de la simulación (Hz) |
+| `ROBOT_PRIM_PATH` | `/World/reBotArm` | Ruta del prim del robot en Isaac Sim |
+| `ASSET_RELATIVE_PATH` | `usd/reBot_B601_DM/reBot_B601_DM.usda` | Ruta relativa del asset USD |
 
 ## Resolución de problemas
 
 ### `OSError: [Errno 98] Address already in use`
 
-El puerto 5005 ya está en uso. Identifica primero el proceso que lo ocupa y termínalo:
+Puerto 5005 ocupado. Identifique y detenga el proceso que lo usa:
 
 ```bash
-# Consultar el proceso que ocupa el puerto
 sudo lsof -i :5005
-
-# Terminar el proceso (sustituye <PID> por el valor real)
 kill <PID>
 ```
 
-### No se encuentra el asset de Isaac Sim
-
-Confirma que la ruta del asset USD existe o comprueba que `REPO_ROOT` es correcto:
+### Asset de Isaac Sim no encontrado
 
 ```bash
-ls usd/RS-rebot-dev-arm/RS-rebot-dev-arm.usda
+ls usd/reBot_B601_DM/reBot_B601_DM.usda
 ```
 
-### El bus CAN no está listo
-
-Asegúrate de que la interfaz CAN está activa con el bitrate correcto:
+### Problemas serial / CAN
 
 ```bash
 can_restart can0
-# Verificar:
 ip -details link show can0 | grep bitrate
 ```
 
-### Los ángulos articulares no se sincronizan
+### Ángulos articulares fuera de sincronía
 
-- Confirma que los puertos del emisor y del receptor coinciden (ambos 5005)
-- Comprueba que el registro del emisor sigue imprimiendo `[send]`
-- Comprueba que el registro del receptor sigue imprimiendo `[recv]`
-- Prueba con `isaacsim_joint_test_sender.py` para descartar problemas de hardware
+- Confirme que los puertos sender/receiver coinciden (5005).
+- Verifique que el emisor muestre repetidamente `[send]`.
+- Verifique que el receptor muestre repetidamente `[recv]`.
+- Use `isaacsim_joint_test_sender.py` para descartar problemas de hardware.
 
-## Componentes y entornos de Python
+## Componentes y entornos Python
 
-| Componente | Entorno de Python | Script de arranque |
+| Componente | Entorno Python | Método de lanzamiento |
 |------|------------|---------|
-| Emisor (brazo físico) | Entorno uv de `reBotArm_control_py` | `run_sender.sh` |
-| Emisor (modo de prueba) | Entorno uv de `reBotArm_control_py` | `isaacsim_joint_test_sender.py` |
-| Receptor | Python oficial de Isaac Sim (`python.sh`) | `run_isaacsim_receiver.sh` |
+| Emisor hardware | Entorno `uv` del proyecto + `reBotArm_control_py` | `uv run python reBotArm_Isaacsim/gravity_joint_sender.py` |
+| Emisor solo-lectura | Entorno `uv` del proyecto | `uv run python reBotArm_Isaacsim/joint_reader_sender.py` |
+| Receptor Isaac Sim | Python oficial de Isaac Sim (`python.sh`) | `"$ISAACSIM_ROOT/python.sh" reBotArm_Isaacsim/isaacsim_joint_receiver.py` |
+| Scripts Isaac Sim | Python oficial de Isaac Sim (`python.sh`) | `"$ISAACSIM_ROOT/python.sh" reBotArm_Isaacsim/isaacsim_ik_sender.py` |

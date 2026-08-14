@@ -2,7 +2,14 @@
 
 简体中文 | [English](./README_EN.md) | [Español](./README_ES.md)
 
-reBot-Isaacsim 是一个专为 reBotArm 设计的 NVIDIA Isaac Sim 仿真项目。它利用 Isaac Sim 的高保真物理引擎，在虚拟环境中精确复现机械臂的运动学特性与夹爪联动逻辑，为控制算法开发、轨迹规划验证及通信协议测试提供独立的纯仿真环境。
+reBot-Isaacsim 是一个针对 reBotDM 机型的 NVIDIA Isaac Sim 仿真项目。当前代码仅兼容 reBotDM，不适用于其他 reBotArm / RS 系列机型。
+
+> 重要说明：
+> - 当前仅兼容 reBotDM
+> - 建议使用 Isaac Sim 6.0.0
+> - 推荐安装方式为下载官方 zip 压缩包并解压安装
+> - 所有与 Isaac Sim 直接相关的脚本都必须通过官方 `python.sh` 启动
+> - 真实机械臂发送端仍使用当前仓库的 `uv` 环境
 
 ## 功能组件概览
 
@@ -44,55 +51,72 @@ reBot-Isaacsim/
 ├── README_EN.md
 ├── README_ES.md
 ├── reBotArm_Isaacsim/                       # 主示例目录
-│   ├── gravity_joint_sender.py              # 重力补偿手柄模式（改装机械臂，手动掰动）
-│   ├── isaacsim_ik_sender.py                # 逆运动学模式（IK 控制）
-│   ├── isaacsim_traj_sender.py              # 轨迹规划模式（IK + 关节空间轨迹）
-│   ├── isaacsim_joint_test_sender.py        # 关节测试模式（预设轨迹，无需硬件）
-│   ├── joint_reader_sender.py                # Real-to-Sim 映射模式（只读关节，同步可视化）
-│   ├── isaacsim_joint_receiver.py           # Isaac Sim 接收端（关节角同步）
+│   ├── gravity_joint_sender.py              # 真实机械臂发送端（uv 环境）
+│   ├── isaacsim_ik_sender.py                # IK 发送脚本（必须用 Isaac python.sh）
+│   ├── isaacsim_traj_sender.py              # 轨迹发送脚本（必须用 Isaac python.sh）
+│   ├── isaacsim_joint_test_sender.py        # 测试发送脚本（视情况使用 python.sh）
+│   ├── joint_reader_sender.py               # 只读映射脚本（真实机械臂/其他项目）
+│   ├── isaacsim_joint_receiver.py           # Isaac Sim 接收端（必须用 Isaac python.sh）
 │   ├── live_sync.py                         # 启动说明脚本
-│   ├── run_sender.sh                        # 启动发送端
-│   └── run_isaacsim_receiver.sh             # 启动 Isaac Sim 接收端
+│   └── ...
 ├── third_party/
-│   └── reBotArm_control_py/                 # 核心控制库（独立 uv 环境）
+│   └── reBotArm_control_py/                 # 机械臂控制库（独立 uv 环境）
 │       ├── pyproject.toml
 │       └── ...
-└── usd/
-    └── RS-rebot-dev-arm/
-        └── RS-rebot-dev-arm.usda            # Isaac Sim 机械臂资产
+├── urdf/
+│   └── ...                                  # 机械臂 URDF / 配置
+├── usd/
+│   └── reBot_B601_DM/
+│       └── reBot_B601_DM.usda               # reBotDM 资产
+└── ...
 ```
+
+> 当前仓库中不再保留 `run_sender.sh` / `run_isaacsim_receiver.sh` 这类包装脚本；请直接运行对应的 Python 脚本，并按以下方式选择启动方式。
 
 ## 依赖与前提条件
 
 | 组件 | 要求 |
 |------|------|
-| Isaac Sim | 已安装并配置 `ISAACSIM_ROOT` 环境变量 |
-| reBotArm 固件 | 机械臂固件已烧录，CAN 总线已连接（`can0`） |
-| CAN 接口 | `can0` 已 up 且 bitrate 为 1 Mbps（`can_restart can0`） |
-| Python | 3.10+ |
-| uv | 推荐使用 uv 管理 Python 环境 |
+| 机械臂型号 | 当前代码仅兼容 reBotDM |
+| Isaac Sim | 6.0.0，建议直接下载官方 zip 安装包解压使用 |
+| Isaac Sim 路径 | 推荐设置 `ISAACSIM_ROOT`，指向官方安装目录 |
+| 接口 | 默认为ttyACM0，在 third_party/reBotArm_control_py/config/rebotarm_dm.yaml 修改|
+| Python | 运行机械臂发送端时可用 Python 3.10+，受 `uv` 管理；Isaac Sim 自带运行时由 `python.sh` 提供 |
+| uv | 推荐使用 uv 管理当前项目和 `third_party/reBotArm_control_py` 依赖 |
 | reBotArm_control_py | 已在 `third_party/reBotArm_control_py` 中运行 `uv sync` |
+
+### 推荐的 Isaac Sim 安装方式
+
+当前项目推荐使用官方的 Isaac Sim zip 发行版，直接下载并解压到固定目录，例如：
+
+```bash
+# 例子：解压到常用目录
+mkdir -p /home/seeed/IsaacSim
+# 把官方 zip 解压到该目录中
+# 之后会得到类似：
+# /home/seeed/IsaacSim/python.sh
+```
 
 ### 检查 CAN 接口
 
 ```bash
-# 查看 CAN 接口状态
-ip link show can0
-# 确保状态为 UP，bitrate 为 1000000
+# 查看 USB2CAN 的串口，确保检测到端口
+ls ttyACM* 
 
-# 如需配置或重启 CAN：
-sudo ip link set can0 down
-sudo ip link set can0 up type can bitrate 1000000 restart-ms 100
+# 赋予端口权限
+sudo chmod 666 /dev/ttyACM*
 ```
 
 ## 环境准备
 
-### 1. Isaac Sim 环境变量
+### 1. 安装 Isaac Sim 6.0.0
 
-确保 `.bashrc` 或 shell 配置中已设置：
+请使用官方 zip 安装包，不要依赖不完整的 Python 环境或混用其他 Isaac Sim 运行时。
+
+运行环境测试脚本验证 isaacsim 正常安装
 
 ```bash
-export ISAACSIM_ROOT=/home/seeed/IsaacSim/_build/linux-x86_64/release
+
 ```
 
 ### 2. reBotArm_control_py 环境
@@ -104,32 +128,29 @@ uv sync
 
 ## 启动（双终端模式）
 
-需要两个独立终端。**终端 1 始终是 Isaac Sim 接收端**，**终端 2 根据不同功能选择对应的发送端**。
+需要两个独立终端。**终端 1 是 Isaac Sim 接收端，终端 2 是实机/发送端**。
+本机可以同时运行，需要修改 DEFAULT_SIM_HOST 和 DEFAULT_REBOT_ARM_HOST 都为 127.0.0.1
+### 终端 1 — 启动 Isaac Sim 接收端
 
-### 终端 1 — 启动 Isaac Sim 接收端（所有模式共用）
+所有与 Isaac Sim 相关的脚本都需直接使用官方 `python.sh` 启动：
 
 ```bash
-cd reBotArm_Isaacsim
-./run_isaacsim_receiver.sh
+"你的isaacsim文件夹路径"/python.sh  "你的工作空间"/reBot-Isaacsim/reBotArm_Isaacsim/isaacsim_joint_receiver.py
 ```
 
 **预期输出：**
 - 启动 Isaac Sim 图形界面
-- 加载地面和机械臂 USD 资产
-- 监听 UDP `127.0.0.1:5005`
+- 加载地面和 reBotDM USD 资产
+- 监听 UDP `DEFAULT_SIM_HOST:5005`
 - 等待发送端连接
 
-### 终端 2 — 根据功能选择对应的发送端
+### 终端 2 — 真实机械臂发送端
 
 **启动顺序：先接收端，再发送端。**
 
-#### ① 重力补偿手柄模式（`gravity_joint_sender`）
-
-适用于改装后的机械臂（拆卸夹爪、加装手柄），手动掰动控制 Isaac Sim 仿真：
-
 ```bash
-cd reBotArm_Isaacsim
-./run_sender.sh
+cd /path/to/reBot-Isaacsim
+uv run python reBotArm_Isaacsim/gravity_joint_sender.py
 ```
 
 **预期行为：**
@@ -137,14 +158,22 @@ cd reBotArm_Isaacsim
 - 机械臂可自由掰动
 - 关节角以 60 Hz 持续通过 UDP 发送
 
-#### ② 逆运动学模式（`isaacsim_ik_sender`）
+#### 其他 Isaac Sim 相关脚本
 
-输入末端位姿（位置/姿态），IK 求解后驱动 Isaac Sim 仿真机械臂。在 `reBotArm_Isaacsim/` 目录下直接 `uv run`：
+如果正在执行与 `isaacsim` 相关的脚本，统一使用官方 `python.sh` 启动，例如：
 
 ```bash
-cd reBotArm_Isaacsim
-uv run python isaacsim_ik_sender.py
+export ISAACSIM_ROOT="你的isaacsim文件夹所在路径"   例如：/home/seeed/IsaacSim/
+"$ISAACSIM_ROOT/python.sh" reBotArm_Isaacsim/isaacsim_ik_sender.py
+"$ISAACSIM_ROOT/python.sh" reBotArm_Isaacsim/isaacsim_traj_sender.py
+"$ISAACSIM_ROOT/python.sh" reBotArm_Isaacsim/isaacsim_joint_test_sender.py
 ```
+
+说明：
+- `gravity_joint_sender.py` / `joint_reader_sender.py` 等直接连接真实机械臂或 UDP 报文的脚本，通常在当前项目的 `uv` 环境中运行；
+- `isaacsim_*` 这类脚本必须使用 Isaac 官方 `python.sh`，否则 `SimulationApp` / Isaac Sim Python 运行时可能不可用。
+
+#### 输入格式示例（以 IK / Traj 发送器为例）
 
 **输入格式（每行一条）：**
 ```
@@ -154,16 +183,7 @@ q j1 j2 j3 j4 j5 j6         # 直接发送关节角 (度)
 gripper <0~1>                # 单独更新夹爪
 ```
 
-#### ③ 轨迹规划模式（`isaacsim_traj_sender`）
-
-在 IK 基础上增加关节空间轨迹规划（MIN_JERK），实现平滑运动。在 `reBotArm_Isaacsim/` 目录下直接 `uv run`：
-
-```bash
-cd reBotArm_Isaacsim
-uv run python isaacsim_traj_sender.py
-```
-
-**输入格式（每行一条）：**
+**轨迹模式输入：**
 ```
 x y z                       # 位置 (米)
 x y z r p y                 # 位置 + 姿态 (米/度)
@@ -173,24 +193,13 @@ speed <scale>                # 调整轨迹时长比例
 resync                       # 重新从仿真端读取当前关节角
 ```
 
-#### ④ 关节测试模式（`isaacsim_joint_test_sender`）
+#### 只读映射模式（`joint_reader_sender`）
 
-无需真实硬件，预设轨迹循环发送，用于验证通讯和 Isaac Sim 接收端：
-
-```bash
-cd reBotArm_Isaacsim
-uv run python isaacsim_joint_test_sender.py
-```
-
-测试发送端在几个预设关节姿态之间缓慢插值循环发送，无需 CAN 连接。
-
-#### ⑤ Real-to-Sim 映射模式（`joint_reader_sender`）
-
-只读关节角并映射到 Isaac Sim，适合实际机械臂在运行其他任务时同步映射可视化。在 `reBotArm_Isaacsim/` 目录下直接 `uv run`：
+只读关节角并映射到 Isaac Sim，适合实际机械臂在运行其他任务时同步映射可视化：
 
 ```bash
-cd reBotArm_Isaacsim
-uv run python joint_reader_sender.py
+cd /path/to/reBot-Isaacsim
+uv run python reBotArm_Isaacsim/joint_reader_sender.py
 ```
 
 **预期行为：**
@@ -271,7 +280,7 @@ kill <PID>
 确认 USD 资产路径存在，或检查 `REPO_ROOT` 是否正确：
 
 ```bash
-ls usd/RS-rebot-dev-arm/RS-rebot-dev-arm.usda
+ls usd/reBot_B601_DM/reBot_B601_DM.usda
 ```
 
 ### CAN 总线未就绪
@@ -293,8 +302,9 @@ ip -details link show can0 | grep bitrate
 
 ## 组件与 Python 环境
 
-| 组件 | Python 环境 | 启动脚本 |
+| 组件 | Python 环境 | 启动方式 |
 |------|------------|---------|
-| 发送端（真实机械臂） | `reBotArm_control_py` uv 环境 | `run_sender.sh` |
-| 发送端（测试模式） | `reBotArm_control_py` uv 环境 | `isaacsim_joint_test_sender.py` |
-| 接收端 | Isaac Sim 官方 Python (`python.sh`) | `run_isaacsim_receiver.sh` |
+| 真实机械臂发送端 | 当前仓库 `uv` 环境 + `reBotArm_control_py` | `uv run python reBotArm_Isaacsim/gravity_joint_sender.py` |
+| 只读映射发送端 | 当前仓库 `uv` 环境 | `uv run python reBotArm_Isaacsim/joint_reader_sender.py` |
+| Isaac Sim 接收端 | Isaac Sim 官方 Python (`python.sh`) | `"$ISAACSIM_ROOT/python.sh" reBotArm_Isaacsim/isaacsim_joint_receiver.py` |
+| Isaac Sim 相关脚本 | Isaac Sim 官方 Python (`python.sh`) | `"$ISAACSIM_ROOT/python.sh" reBotArm_Isaacsim/isaacsim_ik_sender.py` |

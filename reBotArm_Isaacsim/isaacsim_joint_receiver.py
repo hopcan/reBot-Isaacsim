@@ -59,7 +59,7 @@ if not callable(SimulationApp):
     )
 
 ARM_JOINT_COUNT = 6
-DEFAULT_HOST = "127.0.0.1"  #如果用
+DEFAULT_HOST = "127.0.0.1"  #如果用本机运行两个host，两个host都改为这个
 DEFAULT_SIM_HOST = "192.168.1.66"   #isaacsim端
 DEFAULT_REBOT_ARM_HOST = "192.168.15.199"  #机械臂端
 DEFAULT_PORT = 5005

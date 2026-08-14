@@ -4,7 +4,7 @@
 功能概述：
 1. 在当前工程 `uv` 环境中连接真实机械臂。
 2. 启动 MIT + 重力前馈补偿，允许用户手动掰动。
-3. 将前 6 个关节角通过 UDP JSON 持续发送给 Isaac Sim 接收端。
+3. 将前 6 个关节角通过 UDP 持续发送给 Isaac Sim 接收端。
 
 推荐运行方式：
 - 直接使用当前工程的 `uv` 环境运行本脚本。
@@ -15,7 +15,7 @@ Overview:
 2. Enable MIT control with gravity feed-forward compensation so the arm can be
    moved freely by hand.
 3. Continuously send the first 6 joint angles to the Isaac Sim receiver over
-   UDP as JSON packets.
+   UDP packets.
 
 Recommended usage:
 - Run this script inside the current project's `uv` environment.

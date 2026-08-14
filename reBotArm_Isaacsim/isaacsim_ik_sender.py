@@ -4,14 +4,14 @@
 功能概述：
 1. 循环读取用户输入的末端期望位姿（位置 / 位置+姿态）。
 2. 调用 `reBotArm_control_py` 的 IK 求解器，得到前 6 个关节角。
-3. 以与 `isaacsim_joint_test_sender.py` 相同的 JSON UDP 协议将关节角
+3. 以与 `isaacsim_joint_test_sender.py` 相同的 UDP 协议将关节角
    发送到 `isaacsim_joint_receiver.py`（默认 `127.0.0.1:5005`）。
 4. 每次发送前携带可选的夹爪开合比（与 6_ik_test.py 保持一致）。
 
 输入格式（每行一条，支持空行 / Ctrl+C / `quit` 退出）：
     <x> <y> <z>                          (位置, 米; 姿态保持当前)
     <x> <y> <z> <roll> <pitch> <yaw>     (位置+姿态, 米/度)
-    gripper <ratio>                      (单独更新夹爪, ratio ∈ [0, 1])
+    gripper <ratio>                      (单独更新夹爪, 米)
     q <j1> <j2> ... <j6>                 (直接发送关节角, 度)
 
 启动方式：

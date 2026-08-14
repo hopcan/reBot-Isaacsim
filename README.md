@@ -2,7 +2,7 @@
 
 简体中文 | [English](./README_EN.md) | [Español](./README_ES.md)
 
-reBot-Isaacsim 是一个针对 reBotDM 机型的 NVIDIA Isaac Sim 仿真项目。当前代码仅兼容 reBotDM，不适用于其他 reBotArm / RS 系列机型。
+reBot-Isaacsim 是一个针对 reBotDM 机型的 NVIDIA Isaac Sim 仿真项目。当前代码仅兼容 reBotDM，不适用于其他机型。
 
 > 重要说明：
 > - 当前仅兼容 reBotDM
@@ -97,7 +97,7 @@ mkdir -p /home/seeed/IsaacSim
 # /home/seeed/IsaacSim/python.sh
 ```
 
-### 检查 CAN 接口
+### 检查 USB2CAN 的端口
 
 ```bash
 # 查看 USB2CAN 的串口，确保检测到端口
@@ -116,7 +116,7 @@ sudo chmod 666 /dev/ttyACM*
 https://docs.isaacsim.omniverse.nvidia.com/6.0.0/installation/quick-install.html
 https://docs.isaacsim.omniverse.nvidia.com/6.0.0/installation/download.html#isaac-sim-latest-release
 
-运行下面命令安装设置环境变量
+运行下面命令安装和设置环境变量
 
 ```bash
 mkdir ~/isaacsim

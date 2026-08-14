@@ -112,11 +112,19 @@ sudo chmod 666 /dev/ttyACM*
 ### 1. 安装 Isaac Sim 6.0.0
 
 请使用官方 zip 安装包，不要依赖不完整的 Python 环境或混用其他 Isaac Sim 运行时。
+官方链接和资源：
+https://docs.isaacsim.omniverse.nvidia.com/6.0.0/installation/quick-install.html
+https://docs.isaacsim.omniverse.nvidia.com/6.0.0/installation/download.html#isaac-sim-latest-release
 
-运行环境测试脚本验证 isaacsim 正常安装
+运行下面命令安装设置环境变量
 
 ```bash
-
+mkdir ~/isaacsim
+cd ~/Downloads
+unzip "isaac-sim-standalone-6.0.0-linux-x86_64.zip" -d ~/isaacsim
+cd ~/isaacsim
+./post_install.sh
+./isaac-sim.sh
 ```
 
 ### 2. reBotArm_control_py 环境
